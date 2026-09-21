@@ -39,22 +39,22 @@
     "commands": [
       {
         "command": "eoapValidator.validate",
-        "title": "EOAP: Validate Application Package"
+        "title": "EOAP validation"
       }
     ],
     "menus": {
-      "editor/title": [
-        {
-          "command": "eoapValidator.validate",
-          "when": "resourceExtname == .cwl",
-          "group": "navigation"
-        }
-      ],
       "editor/context": [
         {
           "command": "eoapValidator.validate",
           "when": "resourceExtname == .cwl",
           "group": "1_modification"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "eoapValidator.validate",
+          "when": "resourceExtname == .cwl && !explorerResourceIsFolder",
+          "group": "7_modification"
         }
       ]
     },
@@ -64,7 +64,7 @@
         "eoapValidator.executable": {
           "type": "string",
           "default": "",
-          "description": "Optional existing validator executable. Leave empty to automatically install eoap-validator==0.1.0 in an extension-managed virtual environment."
+          "description": "Optional existing validator executable. Leave empty to install the bundled eoap-validator wheel in an extension-managed environment."
         },
         "eoapValidator.arguments": {
           "type": "array",
@@ -109,7 +109,7 @@
         "eoapValidator.validateOnSave": {
           "type": "boolean",
           "default": false,
-          "description": "Revalidate the open panel when the root CWL, a reported local dependency, or staging configuration is saved."
+          "description": "Revalidate the last selected package when a tracked source or staging configuration is saved."
         },
         "eoapValidator.timeoutSeconds": {
           "type": "integer",
@@ -136,7 +136,8 @@
     "vscode:prepublish": "npm run compile"
   },
   "dependencies": {
-    "ajv": "^8.17.1"
+    "ajv": "^8.17.1",
+    "yaml": "^2.9.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.0",

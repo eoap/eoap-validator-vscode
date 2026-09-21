@@ -17,11 +17,11 @@ test('managed installation pins package, checks dependencies and reuses healthy 
       await fs.writeFile(python, '');
     }
   };
-  const env = new ValidatorEnvironment(storage, run);
+  const env = new ValidatorEnvironment(storage, '/extension', run);
   const options = {signal:new AbortController().signal, log:()=>{}};
   const python = await env.ensure('/host/python', options);
   assert.equal(calls.length, 5);
-  assert.deepEqual(calls[2].args, ['-m','pip','install','--disable-pip-version-check','--no-input','eoap-validator==0.1.0']);
+  assert.deepEqual(calls[2].args, ['-m','pip','install','--disable-pip-version-check','--no-input',path.join('/extension','vendor','eoap_validator-0.1.0-py3-none-any.whl')]);
   assert.deepEqual(calls[3].args, ['-m','pip','check']);
   assert.equal(await env.ensure('/host/python', options), python);
   assert.equal(calls.length, 6);
@@ -32,7 +32,7 @@ test('failed setup can retry and cancelled setup invokes no commands', async t =
   const storage = await fs.mkdtemp(path.join(os.tmpdir(), 'eoap-env-'));
   t.after(() => fs.rm(storage, {recursive:true, force:true}));
   let count = 0;
-  const env = new ValidatorEnvironment(storage, async () => { count++; throw new Error('pip unavailable'); });
+  const env = new ValidatorEnvironment(storage, '/extension', async () => { count++; throw new Error('pip unavailable'); });
   const options = {signal:new AbortController().signal, log:()=>{}};
   await assert.rejects(env.ensure('python',options), /pip unavailable/);
   await assert.rejects(env.ensure('python',options), /pip unavailable/);

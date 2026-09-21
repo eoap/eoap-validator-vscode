@@ -9,11 +9,13 @@ test('extension runs alongside files on a trusted workspace host', () => {
   assert.equal(manifest.capabilities.untrustedWorkspaces.supported,false);
   assert.equal(manifest.contributes.commands[0].command,'eoapValidator.validate');
 });
-test('webview uses nonce CSP and text rendering for report content', () => {
-  const html=fs.readFileSync(path.join(__dirname,'../media/report.html'),'utf8');
-  assert.ok(html.includes("default-src 'none'"));
-  assert.ok(html.includes('nonce="__NONCE__"'));
-  assert.ok(html.includes('textContent'));
-  assert.ok(!html.includes('innerHTML'));
-  assert.ok(!html.includes('command:'));
+test('CWL-only editor and Explorer menus replace the custom UI', () => {
+  assert.equal(manifest.contributes.commands[0].title, 'EOAP validation');
+  assert.equal(manifest.contributes.menus['editor/title'], undefined);
+  for (const menu of ['editor/context','explorer/context']) {
+    assert.match(manifest.contributes.menus[menu][0].when, /resourceExtname == \.cwl/);
+  }
+  assert.match(manifest.contributes.menus['explorer/context'][0].when, /!explorerResourceIsFolder/);
+  assert.ok(!fs.existsSync(path.join(__dirname,'../media/report.html')));
+  assert.ok(fs.existsSync(path.join(__dirname,'../vendor/eoap_validator-0.1.0-py3-none-any.whl')));
 });
