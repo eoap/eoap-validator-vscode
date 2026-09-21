@@ -1,123 +1,103 @@
 # EOAP Validator for VS Code
 
-Validate a saved CWL EO Application Package, review the report beside your source,
-and navigate to findings in the editor or Problems panel. This companion extension
-invokes the standalone **eoap-validator** Python CLI; it does not execute workflows.
+Right-click a `.cwl` file in Explorer or its editor and choose **EOAP validation**.
+The extension opens the file and, if its `$graph` contains multiple workflows,
+asks you to select a workflow ID using VS Code's native picker. Cancelling the
+picker stops validation. Single-workflow documents use the validator's automatic
+selection.
 
-The project follows cwl-metadata-editor's TypeScript extension, themed webview,
-command/menu integration, Node tests and VSIX packaging structure.
+Validation issues appear as underlines in the source editor and entries in
+**Problems**. Hover an underline for the rule message and suggested fix. Positions
+come from the validator. Missing required document metadata fields are marked at
+an existing metadata key, with an explicit explanation that the field is absent.
+Other findings without usable local source positions are
+reported in **Output → EOAP Validator**, alongside the full JSON report. There is
+no custom report panel. The validator does not execute workflows.
 
-## Install and use
+## Install
 
-1. Install Python 3.10 or newer with `venv` and `pip` on your workspace host.
-   On first validation, the extension creates a private virtual environment and
-   installs `eoap-validator==0.1.0` and its dependencies automatically.
-2. Build/install the extension:
+Use VS Code 1.95 or newer. For the default managed validator, Python 3.10+
+with `venv` and `pip` must be available on the workspace host.
+The VSIX bundles `vendor/eoap_validator-0.1.0-py3-none-any.whl`, its license and
+notice. On first use, the extension installs this wheel into private VS Code
+extension storage. Its transitive Python dependencies are downloaded using your
+configured pip index; Python and those dependencies are not bundled.
 
-   ```sh
-   npm ci
-   npm run package
-   code --install-extension eoap-validator-vscode-0.1.0.vsix
-   ```
+To build from a checkout, install Node.js and npm, then run:
 
-3. Open a `.cwl` file in a trusted workspace and run **EOAP: Validate Application Package**.
-4. If the package has multiple workflows, enter the workflow ID in the panel and
-   select **Validate**. The extension passes `workflow.cwl#<id>` to the CLI.
-   Leave the ID empty for the validator's automatic single-workflow selection.
-5. Review findings in the panel or Problems. **Go to source** opens a locally
-   available source position. Findings without source positions remain visible
-   in the panel; no line numbers are invented.
-
-The panel remains bound to the file it was opened for. Running the command on
-another CWL file replaces that panel. The default profiles are `eoap-package`
-and `metadata`; change profiles through VS Code settings.
-
-## Configure the executable
-
-Leave `eoapValidator.executable` empty to use automatic installation. The extension
-uses `python3` (`python` on Windows); set `eoapValidator.pythonExecutable` to an
-absolute Python path if needed. The environment lives in VS Code extension storage
-under `validator-0.1.0` and is reused after checking the installed version.
-Installation needs network access to your configured pip index; packages are not
-embedded in the VSIX. Each setup command has a ten-minute timeout. Cancel stops
-setup; another validation retries it. See **Output → EOAP Validator** for progress
-and installation errors.
-
-To use an existing installation instead, set a custom executable:
-
-```json
-{
-  "eoapValidator.executable": "/path/to/venv/bin/eoap-validator"
-}
+```sh
+npm ci
+npm run package
+code --install-extension eoap-validator-vscode-0.1.0.vsix
 ```
 
-Or use a Python executable with separate arguments:
+Use a trusted workspace. Remote SSH, WSL and Dev Containers run the extension and
+Python on the workspace host. Browser-only and virtual workspaces are unsupported.
+
+## Settings
+
+| Setting | Default / purpose |
+| --- | --- |
+| `eoapValidator.executable` | Empty: install and use the bundled wheel |
+| `eoapValidator.pythonExecutable` | Empty: `python3` on POSIX, `python` on Windows |
+| `eoapValidator.arguments` | Prefix arguments for a custom executable only |
+| `eoapValidator.profiles` | `["eoap-package", "metadata"]` |
+| `eoapValidator.stagingFile` | Optional JSON path; requires `eoap-staging` profile |
+| `eoapValidator.failOn` | `error`, or `warning` |
+| `eoapValidator.validateOnSave` | `false`; enable to refresh the last selected package on tracked saves |
+| `eoapValidator.timeoutSeconds` | `120` |
+
+A custom executable bypasses managed installation. For example:
 
 ```json
 {
   "eoapValidator.executable": "/path/to/venv/bin/python",
-  "eoapValidator.arguments": ["-m", "eoap_validator"],
-  "eoapValidator.profiles": ["eoap-package", "metadata"],
-  "eoapValidator.validateOnSave": true
+  "eoapValidator.arguments": ["-m", "eoap_validator"]
 }
 ```
 
-Do not put a shell command into the executable setting. Arguments and source URIs
-are passed separately without shell expansion. Relative staging paths resolve
-against the root CWL's directory:
+Arguments are passed without shell expansion. Relative staging paths resolve
+against the root CWL directory. Setup commands time out after ten minutes.
 
-```json
-{
-  "eoapValidator.profiles": ["eoap-package", "metadata", "eoap-staging"],
-  "eoapValidator.stagingFile": "staging.json",
-  "eoapValidator.failOn": "warning",
-  "eoapValidator.timeoutSeconds": 120
-}
-```
+## Validation lifecycle
 
-## Reports, saves and cancellation
+Validation reads saved files; modified tracked files require saving first.
+Edits and filesystem changes to tracked sources clear stale diagnostics. Running
+validation again replaces the previous session and stops its active process.
+Optional validation on save reuses the selected workflow ID; invoke the context
+menu again to change it after modifying the workflow graph.
 
-- Exit codes 0, 1 and 2 all display valid JSON reports. Validation failure is not
-  mistaken for failure to launch the executable.
-- Successful checks are available under **All checks** and never create Problems.
-- Failed, review and blocked findings with usable source locations create Problems.
-- Editing a tracked source clears diagnostics and marks the report stale. Saving
-  tracked documents can trigger validation when `validateOnSave` is enabled.
-- Filesystem changes invalidate existing results. The validator reports only a
-  partial dependency manifest: changes to unreported `$include`/`$import` sources
-  may require a manual refresh. It does not provide snapshot-isolated reads.
-- Navigation verifies the file digest and dirty-editor state. Python code-point
-  columns are converted to VS Code UTF-16 columns.
-- **Cancel**, a replacement run, or closing the panel terminates the active
-  invocation; late results cannot overwrite a newer report. Timeouts default to
-  120 seconds. On Windows cancellation terminates the direct validator process;
-  descendant-process cleanup is not guaranteed.
-- Diagnostics and navigation to remote HTTP/OCI source documents are unavailable;
-  their findings are still shown as text.
-- Open **Output → EOAP Validator** for launch and parser diagnostics.
-
-## Remote workspaces and trust
-
-The extension runs on the workspace host (Remote SSH, WSL or Dev Containers).
-Install Python there; the extension installs the validator there automatically.
-Configure executable paths for that host. File URIs in
-reports map back to the remote workspace authority. The extension requires a
-trusted workspace and does not support browser-only or virtual workspaces.
-No workflow or image execution is requested, but resolving CWL/schema references
-may use the network through the validator.
+The validator's dependency manifest is partial. Changes to imports/includes not
+reported as dependencies require manual revalidation. Concurrent changes to newly
+discovered dependencies cannot always be detected. Nonlocal findings are retained
+in Output. Python code-point columns are converted to VS Code UTF-16 positions.
+Windows process termination covers the direct process; POSIX also terminates its
+process group.
 
 ## Development
 
+`npm run check` compiles, lints and runs the Node tests. `npm run package` also
+builds the VSIX. Tests cover process execution, report schema validation, bundled
+installation, workflow selection and extension interactions using a VS Code API
+double. Interactive desktop and remote-host testing are separate checks.
+
+`schemas/report.json` is the validator's report schema 1.0. See
+[vendor/README.md](vendor/README.md) for the bundled artifact's provenance.
+
+## Documentation
+
+Start with the [tutorial](docs/tutorial.md), then see
+[configuration and troubleshooting](docs/configuration.md), the complete
+[command and settings reference](docs/reference.md), and the
+[validation lifecycle](docs/lifecycle.md).
+
+To preview the documentation site in a separate Python environment:
+
 ```sh
-npm ci
-npm run check
-npm run package
+python3 -m venv build/docs-venv
+build/docs-venv/bin/python -m pip install -r requirements-docs.txt
+build/docs-venv/bin/python -m mkdocs serve
 ```
 
-`media/report.html` is a static, nonce-protected webview. Report content is inserted
-using text nodes; reports cannot inject HTML, scripts or navigation commands.
-The host accepts only current-report finding indices, never arbitrary URLs from
-the webview. `schemas/report.json` is the bundled JSON representation of
-`../eoap-validator/schemas/report.yaml` (schema 1.0). Update it when the report
-contract changes. Tests cover the runner, report contract and UI safety properties;
-a real VS Code/remote-host smoke test is still recommended before publication.
+On Windows, use `build\docs-venv\Scripts\python.exe`. To check the site without serving
+it, run the same Python executable with `-m mkdocs build --strict --site-dir build/docs`.

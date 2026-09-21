@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+- Show missing required document metadata fields at the parsed metadata section
+  with an explicit missing-field message instead of underlining `$graph`.
+
+- Replace the report webview with CWL-only Explorer/editor context menus named
+  **EOAP validation**, native workflow ID selection and source-line diagnostics.
+- Bundle eoap-validator 0.1.0 as a licensed wheel in `vendor` and install from it.
+
 ## [0.1.0] - 2026-09-21
 
 ### Added

@@ -36,10 +36,10 @@ export const execute: Executor = (executable, args, options) => new Promise((res
 
 export class ValidatorEnvironment {
   private queue: Promise<unknown> = Promise.resolve();
-  constructor(private storage: string, private run: Executor = execute) {}
+  constructor(private storage: string, private extensionPath: string, private run: Executor = execute) {}
 
   ensure(python: string, options: CommandOptions): Promise<string> {
-    // A cancelled/replaced panel must not race another pip process in the same venv.
+    // A cancelled/replaced validation must not race another pip process in the same venv.
     const operation = this.queue.catch(() => undefined).then(() => this.prepare(python, options));
     this.queue = operation;
     return operation;
@@ -47,7 +47,7 @@ export class ValidatorEnvironment {
 
   private async prepare(python: string, options: CommandOptions): Promise<string> {
     if (options.signal.aborted) throw new Error('Installation cancelled.');
-    const directory = path.join(this.storage, 'validator-0.1.0');
+    const directory = path.join(this.storage, 'validator-bundled-0.1.0');
     const executable = path.join(directory, process.platform === 'win32' ? 'Scripts/python.exe' : 'bin/python');
     const health = ['-c', "import sys; from importlib.metadata import version; import eoap_validator.cli; assert sys.version_info >= (3, 10); assert version('eoap-validator') == '0.1.0'"];
     if (existsSync(executable)) {
@@ -58,7 +58,7 @@ export class ValidatorEnvironment {
     options.log(`Preparing managed environment for ${VALIDATOR_REQUIREMENT}\n`);
     await this.run(python, ['-c', "import sys; assert sys.version_info >= (3, 10), 'Python 3.10 or newer is required'"], options);
     await this.run(python, ['-m', 'venv', directory], options);
-    await this.run(executable, ['-m', 'pip', 'install', '--disable-pip-version-check', '--no-input', VALIDATOR_REQUIREMENT], options);
+    await this.run(executable, ['-m', 'pip', 'install', '--disable-pip-version-check', '--no-input', path.join(this.extensionPath, 'vendor', 'eoap_validator-0.1.0-py3-none-any.whl')], options);
     await this.run(executable, ['-m', 'pip', 'check'], options);
     await this.run(executable, health, options);
     options.log('Managed validator is ready.\n');
