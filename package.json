@@ -1,0 +1,150 @@
+{
+  "name": "eoap-validator-vscode",
+  "displayName": "EOAP Validator",
+  "description": "Validate CWL EO Application Packages and inspect actionable findings.",
+  "version": "0.1.0",
+  "publisher": "terradue",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/transpiler-mate/eoap-validator-vscode.git"
+  },
+  "engines": {
+    "vscode": "^1.95.0"
+  },
+  "extensionKind": [
+    "workspace"
+  ],
+  "categories": [
+    "Other",
+    "Programming Languages"
+  ],
+  "keywords": [
+    "CWL",
+    "EOAP",
+    "validation",
+    "Earth Observation"
+  ],
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": false
+    },
+    "virtualWorkspaces": false
+  },
+  "activationEvents": [
+    "onCommand:eoapValidator.validate"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "eoapValidator.validate",
+        "title": "EOAP: Validate Application Package"
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "eoapValidator.validate",
+          "when": "resourceExtname == .cwl",
+          "group": "navigation"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "eoapValidator.validate",
+          "when": "resourceExtname == .cwl",
+          "group": "1_modification"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "EOAP Validator",
+      "properties": {
+        "eoapValidator.executable": {
+          "type": "string",
+          "default": "",
+          "description": "Optional existing validator executable. Leave empty to automatically install eoap-validator==0.1.0 in an extension-managed virtual environment."
+        },
+        "eoapValidator.arguments": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "description": "Prefix arguments for an explicitly configured executable. Ignored for the managed environment."
+        },
+        "eoapValidator.profiles": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": [
+              "eoap-package",
+              "eoap-staging",
+              "metadata"
+            ]
+          },
+          "default": [
+            "eoap-package",
+            "metadata"
+          ],
+          "description": "Validation profiles."
+        },
+        "eoapValidator.stagingFile": {
+          "type": "string",
+          "default": "",
+          "description": "Optional staging JSON path, absolute or relative to the root CWL directory. Requires eoap-staging."
+        },
+        "eoapValidator.failOn": {
+          "type": "string",
+          "enum": [
+            "error",
+            "warning"
+          ],
+          "default": "error",
+          "description": "Validation failure threshold."
+        },
+        "eoapValidator.validateOnSave": {
+          "type": "boolean",
+          "default": false,
+          "description": "Revalidate the open panel when the root CWL, a reported local dependency, or staging configuration is saved."
+        },
+        "eoapValidator.timeoutSeconds": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 3600,
+          "default": 120,
+          "description": "Maximum validator run time."
+        },
+        "eoapValidator.pythonExecutable": {
+          "type": "string",
+          "default": "",
+          "description": "Python 3.10+ executable used to create the managed environment. Empty uses python3 on POSIX or python on Windows."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "lint": "eslint src --max-warnings=0",
+    "test": "npm run compile && node --test test/*.test.js",
+    "check": "npm run compile && npm run lint && npm test",
+    "package": "npm run check && vsce package",
+    "vscode:prepublish": "npm run compile"
+  },
+  "dependencies": {
+    "ajv": "^8.17.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.0",
+    "@types/node": "^22.0.0",
+    "@types/vscode": "^1.95.0",
+    "@vscode/vsce": "^3.6.0",
+    "eslint": "^9.39.0",
+    "typescript": "^5.9.0",
+    "typescript-eslint": "^8.46.0"
+  }
+}

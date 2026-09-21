@@ -1,0 +1,7 @@
+site_name: EOAP Validator for VS Code
+nav:
+  - Overview: index.md
+  - Tutorial: tutorial.md
+  - Configuration: configuration.md
+  - Reference: reference.md
+  - Explanation: lifecycle.md
