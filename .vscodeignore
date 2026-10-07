@@ -2,6 +2,7 @@
 .github/**
 src/**
 test/**
+scripts/**
 docs/**
 tsconfig.json
 eslint.config.mjs
