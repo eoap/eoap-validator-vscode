@@ -28,7 +28,7 @@ To build from a checkout, install Node.js 22 or newer and npm, then run:
 ```sh
 npm ci
 npm run package
-code --install-extension eoap-validator-vscode-0.1.0.vsix
+code --install-extension eoap-validator-vscode-0.2.0.vsix
 ```
 
 Use a trusted workspace. Remote SSH, WSL and Dev Containers run the extension and

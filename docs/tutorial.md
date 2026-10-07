@@ -12,7 +12,7 @@ root:
 ```sh
 npm ci
 npm run package
-code --install-extension eoap-validator-vscode-0.1.0.vsix
+code --install-extension eoap-validator-vscode-0.2.0.vsix
 ```
 
 Alternatively, install an already-built VSIX with **Extensions: Install from
