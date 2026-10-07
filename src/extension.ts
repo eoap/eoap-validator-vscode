@@ -4,7 +4,7 @@ import * as path from 'node:path';
 import * as vscode from 'vscode';
 import { actionable, Finding, localPath, Report, utf16Column } from './report';
 import { runValidator } from './runner';
-import { ValidatorEnvironment } from './environment';
+import { ValidatorEnvironment, VALIDATOR_REQUIREMENT } from './environment';
 import { workflowIds } from './workflows';
 import { missingMetadataAnchor } from './metadata-location';
 
@@ -132,7 +132,7 @@ class ValidationSession implements vscode.Disposable {
       let executable = config.get<string>('executable', '').trim();
       let prefixArgs = config.get<string[]>('arguments', []);
       if (!executable) {
-        this.output.appendLine('Preparing bundled eoap-validator 0.1.0…');
+        this.output.appendLine(`Preparing bundled ${VALIDATOR_REQUIREMENT}…`);
         executable = await this.environment.ensure(
           config.get<string>('pythonExecutable', '').trim() || (process.platform === 'win32' ? 'python' : 'python3'),
           { signal: controller.signal, log: text => this.output.append(text) });

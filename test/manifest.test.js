@@ -3,6 +3,13 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const manifest = require('../package.json');
+const artifact = require('../vendor/validator.json');
+const { createHash } = require('node:crypto');
+
+test('bundled official wheel matches the pinned checksum', () => {
+  const wheel = fs.readFileSync(path.join(__dirname, '../vendor', artifact.filename));
+  assert.equal(createHash('sha256').update(wheel).digest('hex'), artifact.sha256);
+});
 
 test('extension runs alongside files on a trusted workspace host', () => {
   assert.deepEqual(manifest.extensionKind,['workspace']);
@@ -17,5 +24,5 @@ test('CWL-only editor and Explorer menus replace the custom UI', () => {
   }
   assert.match(manifest.contributes.menus['explorer/context'][0].when, /!explorerResourceIsFolder/);
   assert.ok(!fs.existsSync(path.join(__dirname,'../media/report.html')));
-  assert.ok(fs.existsSync(path.join(__dirname,'../vendor/eoap_validator-0.1.0-py3-none-any.whl')));
+  assert.ok(fs.existsSync(path.join(__dirname,'../vendor',artifact.filename)));
 });

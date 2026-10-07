@@ -1,10 +1,11 @@
 /** Install the pinned validator into extension-owned workspace-host storage. */
 import { spawn } from 'node:child_process';
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { mkdir } from 'node:fs/promises';
 import * as path from 'node:path';
 
-export const VALIDATOR_REQUIREMENT = 'eoap-validator==0.1.0';
+const artifact = JSON.parse(readFileSync(path.join(__dirname, '../vendor/validator.json'), 'utf8')) as { version: string; filename: string; sha256: string };
+export const VALIDATOR_REQUIREMENT = `eoap-validator==${artifact.version}`;
 export interface CommandOptions { signal: AbortSignal; log: (text: string) => void }
 export type Executor = (executable: string, args: string[], options: CommandOptions) => Promise<void>;
 
@@ -47,9 +48,9 @@ export class ValidatorEnvironment {
 
   private async prepare(python: string, options: CommandOptions): Promise<string> {
     if (options.signal.aborted) throw new Error('Installation cancelled.');
-    const directory = path.join(this.storage, 'validator-bundled-0.1.0');
+    const directory = path.join(this.storage, `validator-bundled-${artifact.version}-${artifact.sha256}`);
     const executable = path.join(directory, process.platform === 'win32' ? 'Scripts/python.exe' : 'bin/python');
-    const health = ['-c', "import sys; from importlib.metadata import version; import eoap_validator.cli; assert sys.version_info >= (3, 10); assert version('eoap-validator') == '0.1.0'"];
+    const health = ['-c', `import sys; from importlib.metadata import version; import eoap_validator.cli; assert sys.version_info >= (3, 10); assert version('eoap-validator') == '${artifact.version}'`];
     if (existsSync(executable)) {
       try { await this.run(executable, health, options); return executable; }
       catch (error) { if (options.signal.aborted) throw error; }
@@ -58,7 +59,7 @@ export class ValidatorEnvironment {
     options.log(`Preparing managed environment for ${VALIDATOR_REQUIREMENT}\n`);
     await this.run(python, ['-c', "import sys; assert sys.version_info >= (3, 10), 'Python 3.10 or newer is required'"], options);
     await this.run(python, ['-m', 'venv', directory], options);
-    await this.run(executable, ['-m', 'pip', 'install', '--disable-pip-version-check', '--no-input', path.join(this.extensionPath, 'vendor', 'eoap_validator-0.1.0-py3-none-any.whl')], options);
+    await this.run(executable, ['-m', 'pip', 'install', '--disable-pip-version-check', '--no-input', path.join(this.extensionPath, 'vendor', artifact.filename)], options);
     await this.run(executable, ['-m', 'pip', 'check'], options);
     await this.run(executable, health, options);
     options.log('Managed validator is ready.\n');

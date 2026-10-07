@@ -1,5 +1,11 @@
 version: '3'
 tasks:
+  retrieve-validator:
+    desc: Download the pinned PyPI validator wheel and refresh bundled attribution
+    vars:
+      PYTHON: '{{default "python3" .PYTHON}}'
+    cmds:
+      - '"{{.PYTHON}}" scripts/retrieve-validator.py'
   default:
     cmds:
       - npm run check

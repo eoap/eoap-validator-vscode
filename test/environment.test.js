@@ -4,6 +4,7 @@ const fs = require('node:fs/promises');
 const os = require('node:os');
 const path = require('node:path');
 const { ValidatorEnvironment } = require('../dist/environment');
+const artifact = require('../vendor/validator.json');
 
 test('managed installation pins package, checks dependencies and reuses healthy environment', async t => {
   const storage = await fs.mkdtemp(path.join(os.tmpdir(), 'eoap-env-'));
@@ -20,12 +21,13 @@ test('managed installation pins package, checks dependencies and reuses healthy 
   const env = new ValidatorEnvironment(storage, '/extension', run);
   const options = {signal:new AbortController().signal, log:()=>{}};
   const python = await env.ensure('/host/python', options);
+  assert.equal(path.basename(path.dirname(path.dirname(python))), `validator-bundled-${artifact.version}-${artifact.sha256}`);
   assert.equal(calls.length, 5);
-  assert.deepEqual(calls[2].args, ['-m','pip','install','--disable-pip-version-check','--no-input',path.join('/extension','vendor','eoap_validator-0.1.0-py3-none-any.whl')]);
+  assert.deepEqual(calls[2].args, ['-m','pip','install','--disable-pip-version-check','--no-input',path.join('/extension','vendor',artifact.filename)]);
   assert.deepEqual(calls[3].args, ['-m','pip','check']);
   assert.equal(await env.ensure('/host/python', options), python);
   assert.equal(calls.length, 6);
-  assert.match(calls[5].args[1], /version\('eoap-validator'\) == '0.1.0'/);
+  assert.ok(calls[5].args[1].includes(`version('eoap-validator') == '${artifact.version}'`));
 });
 
 test('failed setup can retry and cancelled setup invokes no commands', async t => {

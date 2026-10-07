@@ -17,7 +17,7 @@ including findings without usable source positions, is available in
   host, plus access to your configured pip index for first-use dependencies.
 - A saved local or remote-workspace `.cwl` file.
 
-The extension bundles eoap-validator 0.1.0 and installs it in private extension
+The extension bundles eoap-validator 0.2.0 and installs it in private extension
 storage on first use. You can also configure an existing validator executable.
 Remote SSH, WSL and Dev Containers use Python and paths on the workspace host.
 Browser-only and virtual workspaces are unsupported.

@@ -18,7 +18,7 @@ no custom report panel. The validator does not execute workflows.
 
 Use VS Code 1.95 or newer. For the default managed validator, Python 3.10+
 with `venv` and `pip` must be available on the workspace host.
-The VSIX bundles `vendor/eoap_validator-0.1.0-py3-none-any.whl`, its license and
+The VSIX bundles `vendor/eoap_validator-0.2.0-py3-none-any.whl`, its license and
 notice. On first use, the extension installs this wheel into private VS Code
 extension storage. Its transitive Python dependencies are downloaded using your
 configured pip index; Python and those dependencies are not bundled.
@@ -82,7 +82,21 @@ installation, workflow selection and extension interactions using a VS Code API
 double. Interactive desktop and remote-host testing are separate checks.
 
 `schemas/report.json` is the validator's report schema 1.0. See
-[vendor/README.md](vendor/README.md) for the bundled artifact's provenance.
+[vendor/README.md](vendor/README.md) for the bundled official PyPI artifact's provenance.
+
+Refresh the pinned wheel and its license/notice files with:
+
+```sh
+task retrieve-validator
+# Override Python if needed (for example, on Windows):
+task retrieve-validator PYTHON=python
+```
+
+The task uses `pip download --no-deps` from PyPI and verifies the SHA-256 pinned
+in `vendor/validator.json` before replacing the bundled files. To upgrade, update
+the version, filename and published checksum in that file, retrieve the wheel,
+and run `task` to check the extension. Managed environments are keyed by version
+and checksum so a refreshed artifact gets a fresh environment.
 
 ## Documentation
 

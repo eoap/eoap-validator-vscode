@@ -6,7 +6,7 @@ file. See [Reference](reference.md) for all defaults and allowed values.
 
 ## Managed installation
 
-Leave `eoapValidator.executable` empty to use the bundled eoap-validator 0.1.0
+Leave `eoapValidator.executable` empty to use the bundled eoap-validator 0.2.0
 wheel. The extension installs it into a private virtual environment in VS Code
 extension storage on first validation, then checks and reuses that environment.
 Python itself is not bundled.

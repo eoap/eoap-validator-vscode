@@ -1,13 +1,17 @@
 # Bundled EOAP Validator
 
-- Package: `eoap-validator` 0.1.0
-- Artifact: `eoap_validator-0.1.0-py3-none-any.whl`
-- Source: https://github.com/transpiler-mate/eoap-validator
-- Source checkout commit: `0b44fbe8b60b5111d856cb38e8fc2d7970f9746a`
-- Copied from the clean local source checkout's `dist` directory.
-- SHA-256: `401f558ce8bb1042fa803d8b58e09be86ac4a678295808420b4358a0340a6b4f`
-- License and attribution: `EOAP-VALIDATOR-LICENSE`, `EOAP-VALIDATOR-NOTICE`.
+- Package: `eoap-validator` 0.2.0
+- Artifact: `eoap_validator-0.2.0-py3-none-any.whl`
+- Release: https://pypi.org/project/eoap-validator/0.2.0/
+- Source: https://github.com/eoap/eoap-validator
+- Retrieved with `task retrieve-validator` using `pip download` from PyPI.
+- SHA-256: `6f6bbbf18c20fb33d6072d6da135ec4cb9a92237eb663c19596ad78c6a4735fa`
+- License and attribution extracted from the wheel: `EOAP-VALIDATOR-LICENSE`, `EOAP-VALIDATOR-NOTICE`.
 
-The extension installs this local wheel, not a registry copy of eoap-validator.
-Transitive Python requirements are resolved by pip on first use. They and Python
-itself are not included in this directory.
+The extension installs this bundled official PyPI wheel. Transitive Python
+requirements are resolved by pip on first use. They and Python itself are not
+included in this directory.
+
+The release and expected checksum are pinned in `validator.json`. To upgrade,
+update that file using the release's published SHA-256, run
+`task retrieve-validator`, and check CLI/report compatibility with `task`.
