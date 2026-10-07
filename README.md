@@ -23,6 +23,19 @@ notice. On first use, the extension installs this wheel into private VS Code
 extension storage. Its transitive Python dependencies are downloaded using your
 configured pip index; Python and those dependencies are not bundled.
 
+On Linux or macOS, download and install the VSIX from the GitHub release:
+
+```sh
+curl -fL -o /tmp/eoap-validator-vscode-0.2.0.vsix \
+  https://github.com/eoap/eoap-validator-vscode/releases/download/0.2.0/eoap-validator-vscode-0.2.0.vsix &&
+code --install-extension /tmp/eoap-validator-vscode-0.2.0.vsix
+```
+
+`code --install-extension` takes a local VSIX path, so download the file before
+installing it. You can also download it from the
+[release page](https://github.com/eoap/eoap-validator-vscode/releases/tag/0.2.0)
+and choose **Extensions: Install from VSIX...** in the Command Palette.
+
 To build from a checkout, install Node.js 22 or newer and npm, then run:
 
 ```sh
@@ -100,10 +113,13 @@ and checksum so a refreshed artifact gets a fresh environment.
 
 ## Documentation
 
-Start with the [tutorial](docs/tutorial.md), then see
-[configuration and troubleshooting](docs/configuration.md), the complete
-[command and settings reference](docs/reference.md), and the
-[validation lifecycle](docs/lifecycle.md).
+Start with the [first-package tutorial](docs/tutorial.md). For specific tasks,
+use the how-to guides for [installation](docs/build.md),
+[validator environments](docs/configuration.md), [staging](docs/staging.md),
+[validation on save](docs/automation.md), and [troubleshooting](docs/troubleshooting.md).
+Look up commands and settings in the [reference](docs/reference.md), or read
+the [validation lifecycle explanation](docs/lifecycle.md) to understand how
+results stay current.
 
 To preview the documentation site in a separate Python environment:
 

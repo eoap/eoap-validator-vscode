@@ -22,11 +22,25 @@ storage on first use. You can also configure an existing validator executable.
 Remote SSH, WSL and Dev Containers use Python and paths on the workspace host.
 Browser-only and virtual workspaces are unsupported.
 
-## Documentation
+## Tutorials
 
-- [Tutorial](tutorial.md): install the extension and validate a package.
-- [Configuration](configuration.md): choose Python, use an existing validator,
-  enable save validation and troubleshoot setup.
-- [Reference](reference.md): command, settings and report format.
-- [Validation lifecycle](lifecycle.md): saved sources, diagnostic locations,
-  cancellation and dependency tracking.
+Learn through a complete exercise: [Validate your first package](tutorial.md).
+
+## How-to guides
+
+Follow a guide for a specific task:
+
+- [Build and install a VSIX](build.md).
+- [Choose a validator environment](configuration.md).
+- [Enable staging checks](staging.md).
+- [Revalidate on save and adjust the failure threshold](automation.md).
+- [Troubleshoot validation](troubleshooting.md).
+
+## Reference
+
+Look up [commands, settings and the report contract](reference.md).
+
+## Explanation
+
+Understand the [validation lifecycle](lifecycle.md), including saved sources,
+dependency tracking and diagnostic locations.

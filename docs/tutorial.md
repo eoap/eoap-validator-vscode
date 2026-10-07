@@ -1,57 +1,70 @@
-# Validate a package
+# Validate your first package
 
-## Install
+In this tutorial, you will create a small CWL package, validate it, introduce a
+missing-field finding and fix it. You will see how source diagnostics change
+when you save and revalidate.
 
-Use VS Code 1.95 or newer. For the default managed installation, make Python
-3.10+ with `venv` and `pip` available on the workspace host. First-use setup
-requires access to your configured pip index to download dependencies.
+## Before you start
 
-To build from a checkout, install Node.js and npm, then run from the repository
-root:
+Use VS Code 1.95 or newer with the extension installed, Python 3.10+ with `venv`
+and `pip` on the workspace host, and access to your configured pip index.
+If you need to install the extension, follow [Build and install a VSIX](build.md).
 
-```sh
-npm ci
-npm run package
-code --install-extension eoap-validator-vscode-0.2.0.vsix
+Open a folder in VS Code and trust the workspace. For this exercise, open
+workspace Settings JSON and use only the package profile:
+
+```json
+{
+  "eoapValidator.profiles": ["eoap-package"]
+}
 ```
 
-Alternatively, install an already-built VSIX with **Extensions: Install from
-VSIX...** in the Command Palette. Open a trusted workspace containing your CWL
-package. In Remote SSH, WSL or a Dev Container, install the extension on the
-workspace host and make Python available there.
+This lets you explore package checks without adding Transpiler-Mate metadata.
+
+## Create a package
+
+Create `hello.cwl` in the folder and save this content:
+
+```yaml
+cwlVersion: v1.2
+class: Workflow
+id: main
+label: Hello package
+doc: A small workflow for learning validation.
+inputs: []
+outputs: []
+steps: []
+```
 
 ## Run validation
 
-1. Right-click a `.cwl` file in Explorer or its editor and choose
-   **EOAP validation**. You can also run the command from the Command Palette
-   with the CWL file active.
-2. If the root `$graph` contains multiple workflows, choose a workflow ID.
-   Cancelling the picker stops validation. A single workflow uses the validator's
-   automatic selection.
-3. If prompted, choose **Save and validate** to save modified tracked files.
-   Validation reads the files on disk.
-4. On first use, wait for the bundled validator and its dependencies to install.
-   Open **View → Output** and choose **EOAP Validator** to follow setup and
-   validation output.
+Right-click `hello.cwl` in Explorer and choose **EOAP validation**. This document
+has one workflow, so no workflow selection is needed. If prompted, choose
+**Save and validate**.
 
-Multiple root workflows need distinct, nonempty IDs. Fix missing or duplicate
-IDs before retrying if the picker cannot be shown.
+On first use, wait for the managed validator environment to be prepared. Open
+**View → Output**, select **EOAP Validator**, and inspect the result. The report
+identifies the selected workflow and its findings. The validator does not run
+this workflow.
 
-## Review and fix findings
+## Introduce and fix a finding
 
-Open **View → Problems** to browse findings, or hover source underlines for the
-rule message and any suggested fix. Each diagnostic includes its validator rule
-ID. Findings without usable local positions remain in **Output → EOAP Validator**,
-which also contains the complete JSON report.
+Remove the `label` line, save the file and run **EOAP validation** again. Open
+**View → Problems** and find the missing-label finding. Select it to navigate to
+its source location; hover its underline to read the message. The full report
+remains available in Output.
 
-A missing required document metadata field may be underlined at an existing
-metadata key. The message explicitly identifies the missing field and explains
-that it belongs at document level; the existing key is an anchor for the message.
+Restore `label: Hello package`, save, and run the command again. Check that the
+missing-label finding is gone. Editing a tracked source clears its previous
+diagnostics until you validate again.
 
-Edit the package, save it and run **EOAP validation** again. Editing a tracked
-source clears stale diagnostics. To refresh automatically on tracked saves,
-enable `eoapValidator.validateOnSave`; first select a package with the command.
-Use the command again to choose another workflow after changing the graph.
+## Continue with your own package
 
-See [Configuration](configuration.md) for staging checks and setup troubleshooting,
-and [Validation lifecycle](lifecycle.md) for dependency-tracking limits.
+You have completed the create, validate and repair cycle. Repeat it with a saved
+CWL package of your own. If its root document has multiple workflows, select an
+ID when prompted.
+
+To return to the extension's default profiles, remove the `profiles` override.
+Then use the [how-to guides](index.md#how-to-guides) for staging checks,
+automatic revalidation or a different Python environment. See
+[Validation lifecycle](lifecycle.md) to understand how results stay current.

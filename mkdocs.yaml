@@ -1,7 +1,17 @@
 site_name: EOAP Validator for VS Code
+
+theme: readthedocs
 nav:
   - Overview: index.md
-  - Tutorial: tutorial.md
-  - Configuration: configuration.md
-  - Reference: reference.md
-  - Explanation: lifecycle.md
+  - Tutorials:
+      - Validate your first package: tutorial.md
+  - How-to guides:
+      - Build and install a VSIX: build.md
+      - Choose a validator environment: configuration.md
+      - Enable staging checks: staging.md
+      - Revalidate on save: automation.md
+      - Troubleshoot validation: troubleshooting.md
+  - Reference:
+      - Commands, settings and reports: reference.md
+  - Explanation:
+      - Validation lifecycle: lifecycle.md
