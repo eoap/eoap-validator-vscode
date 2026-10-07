@@ -23,7 +23,7 @@ notice. On first use, the extension installs this wheel into private VS Code
 extension storage. Its transitive Python dependencies are downloaded using your
 configured pip index; Python and those dependencies are not bundled.
 
-To build from a checkout, install Node.js and npm, then run:
+To build from a checkout, install Node.js 22 or newer and npm, then run:
 
 ```sh
 npm ci
