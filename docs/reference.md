@@ -26,7 +26,8 @@ All settings use the `eoapValidator.` prefix.
 | `validateOnSave` | `false` | Revalidates the last selected package on tracked saves, reusing its selected workflow ID. |
 | `timeoutSeconds` | `120` | Integer from 1 to 3600; limits validator execution, excluding managed setup. |
 
-See [Configuration](configuration.md) for examples and troubleshooting.
+See [Choose a validator environment](configuration.md) for setup examples and
+[Troubleshoot validation](troubleshooting.md) for failures.
 
 ## Validator invocation and reports
 
