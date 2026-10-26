@@ -143,9 +143,17 @@
     "@eslint/js": "^9.39.0",
     "@types/node": "^22.0.0",
     "@types/vscode": "^1.95.0",
-    "@vscode/vsce": "^4.0.0",
+    "@vscode/vsce": "~3.9.2",
     "eslint": "^9.39.0",
     "typescript": "^5.9.0",
     "typescript-eslint": "^8.46.0"
+  },
+  "overrides": {
+    "@vscode/vsce": {
+      "@azure/identity": "4.13.0",
+      "@azure/msal-node": {
+        "uuid": "^11.1.1"
+      }
+    }
   }
 }
