@@ -22,12 +22,16 @@ test('managed installation pins package, checks dependencies and reuses healthy 
   const options = {signal:new AbortController().signal, log:()=>{}};
   const python = await env.ensure('/host/python', options);
   assert.equal(path.basename(path.dirname(path.dirname(python))), `validator-bundled-${artifact.version}-${artifact.sha256}`);
-  assert.equal(calls.length, 5);
-  assert.deepEqual(calls[2].args, ['-m','pip','install','--disable-pip-version-check','--no-input',path.join('/extension','vendor',artifact.filename)]);
-  assert.deepEqual(calls[3].args, ['-m','pip','check']);
-  assert.equal(await env.ensure('/host/python', options), python);
   assert.equal(calls.length, 6);
-  assert.ok(calls[5].args[1].includes(`version('eoap-validator') == '${artifact.version}'`));
+  assert.equal(calls[2].args.at(-2), '--upgrade');
+  assert.match(calls[2].args.at(-1), /^pip @ https:\/\/files\.pythonhosted\.org\/.+#sha256=[a-f0-9]{64}$/);
+  assert.deepEqual(calls[3].args, ['-m','pip','install','--disable-pip-version-check','--no-input','certifi>=2026.10.19',path.join('/extension','vendor',artifact.filename)]);
+  assert.deepEqual(calls[4].args, ['-m','pip','check']);
+  assert.equal(await env.ensure('/host/python', options), python);
+  assert.equal(calls.length, 7);
+  assert.ok(calls[6].args[1].includes(`version('eoap-validator') == '${artifact.version}'`));
+  assert.ok(calls[6].args[1].includes("version('pip')"));
+  assert.ok(calls[6].args[1].includes("version('certifi')"));
 });
 
 test('failed setup can retry and cancelled setup invokes no commands', async t => {
@@ -42,4 +46,28 @@ test('failed setup can retry and cancelled setup invokes no commands', async t =
   const controller = new AbortController(); controller.abort();
   await assert.rejects(env.ensure('python',{...options,signal:controller.signal}), /cancelled/);
   assert.equal(count, 2);
+});
+
+test('repairs a cached environment whose trust health check fails', async t => {
+  const storage = await fs.mkdtemp(path.join(os.tmpdir(), 'eoap-env-'));
+  t.after(() => fs.rm(storage, {recursive:true, force:true}));
+  const directory = path.join(storage, `validator-bundled-${artifact.version}-${artifact.sha256}`);
+  const python = path.join(directory, process.platform === 'win32' ? 'Scripts/python.exe' : 'bin/python');
+  await fs.mkdir(path.dirname(python), {recursive:true});
+  await fs.writeFile(python, '');
+  const installs = [];
+  let healthChecks = 0;
+  const run = async (exe, args) => {
+    if (exe === python && args[0] === '-c' && healthChecks++ === 0) {
+      throw new Error('Outdated certificate bundle');
+    }
+    if (args.includes('install')) installs.push(args);
+  };
+  const env = new ValidatorEnvironment(storage, '/extension', run);
+  const options = {signal:new AbortController().signal, log:()=>{}};
+  assert.equal(await env.ensure('/host/python', options), python);
+  assert.match(installs[0].at(-1), /^pip @ https:/);
+  assert.ok(installs[1].includes('certifi>=2026.10.19'));
+  assert.equal(await env.ensure('/host/python', options), python);
+  assert.equal(installs.length, 2);
 });
