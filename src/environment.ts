@@ -5,6 +5,7 @@ import { mkdir } from 'node:fs/promises';
 import * as path from 'node:path';
 
 const artifact = JSON.parse(readFileSync(path.join(__dirname, '../vendor/validator.json'), 'utf8')) as { version: string; filename: string; sha256: string };
+const PATCHED_PIP = "pip @ https://files.pythonhosted.org/packages/3f/06/3e4420302363fbb71be3c7f35ce042f54bfca330e3e66b3a2e3c4cca579f/pip-26.2.2-py3-none-any.whl#sha256=fd7f4dfa8190e014013b9f08f3e973f4e4c26ffd179a204895533a7254813a70";
 export const VALIDATOR_REQUIREMENT = `eoap-validator==${artifact.version}`;
 export interface CommandOptions { signal: AbortSignal; log: (text: string) => void }
 export type Executor = (executable: string, args: string[], options: CommandOptions) => Promise<void>;
@@ -50,7 +51,7 @@ export class ValidatorEnvironment {
     if (options.signal.aborted) throw new Error('Installation cancelled.');
     const directory = path.join(this.storage, `validator-bundled-${artifact.version}-${artifact.sha256}`);
     const executable = path.join(directory, process.platform === 'win32' ? 'Scripts/python.exe' : 'bin/python');
-    const health = ['-c', `import sys; from importlib.metadata import version; import eoap_validator.cli; assert sys.version_info >= (3, 10); assert version('eoap-validator') == '${artifact.version}'`];
+    const health = ['-c', `import sys; from importlib.metadata import version; import eoap_validator.cli; assert sys.version_info >= (3, 10); assert version('eoap-validator') == '${artifact.version}'; assert tuple(map(int, version('pip').split('.')[:3])) >= (26, 2, 2); assert tuple(map(int, version('certifi').split('.'))) >= (2026, 10, 19)`];
     if (existsSync(executable)) {
       try { await this.run(executable, health, options); return executable; }
       catch (error) { if (options.signal.aborted) throw error; }
@@ -59,7 +60,9 @@ export class ValidatorEnvironment {
     options.log(`Preparing managed environment for ${VALIDATOR_REQUIREMENT}\n`);
     await this.run(python, ['-c', "import sys; assert sys.version_info >= (3, 10), 'Python 3.10 or newer is required'"], options);
     await this.run(python, ['-m', 'venv', directory], options);
-    await this.run(executable, ['-m', 'pip', 'install', '--disable-pip-version-check', '--no-input', path.join(this.extensionPath, 'vendor', artifact.filename)], options);
+    // Authenticate the bootstrap wheel by hash before making index requests.
+    await this.run(executable, ['-m', 'pip', 'install', '--disable-pip-version-check', '--no-input', '--upgrade', PATCHED_PIP], options);
+    await this.run(executable, ['-m', 'pip', 'install', '--disable-pip-version-check', '--no-input', 'certifi>=2026.10.19', path.join(this.extensionPath, 'vendor', artifact.filename)], options);
     await this.run(executable, ['-m', 'pip', 'check'], options);
     await this.run(executable, health, options);
     options.log('Managed validator is ready.\n');
