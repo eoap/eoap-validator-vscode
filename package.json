@@ -146,7 +146,7 @@
     "@vscode/vsce": "~4.1.0",
     "eslint": "^10.14.0",
     "typescript": "^5.9.0",
-    "typescript-eslint": "^8.72.1"
+    "typescript-eslint": "^8.72.2"
   },
   "overrides": {
     "@vscode/vsce": {
